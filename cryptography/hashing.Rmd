@@ -1,0 +1,199 @@
+---
+title: "Cryptography"
+output: html_document
+date: "2023-04-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Safety: bad things don't happen 
+Liveness: good things happen eventually 
+
+CIA: 
+- Confidentiality: secrets stay secret (safety: the bad thing is unsecrecy)
+
+- Integrity: Agents are who they say they are (safety: bad thing is impersonation) 
+
+- Availability: Good thing happens eventually (basically liveness)
+
+Now we must rigorously differentiate C and I. 
+
+Hashing: 
+Hashing is a technique to convert numerical value of arbitrary size (i.e no maximum value) 
+
+```{r}
+min_hash = function(n, max) {
+  return(n %% max)
+}
+
+min_hash(4,2) # remainder is 0 
+min_hash(9,3) # remainder is 0
+min_hash(12,5) # remainder is 2 
+min_hash(12,7) # remainder is 5
+
+min_hash(11,10) == min_hash(21,10) #both have a remainder of 1, so this statement is TRUE. 
+
+#this is a mathematical example of integrity, where 2 'agents' would confirm they both get the same number on each end. 
+```
+
+A *hash-based signature* is a technique where a numerical value of small size is computed from a large amount of numerical daata in such a manner that, if the overall data is changed, the hash is highly likely to change. 
+
+They are used to allow us to validate executables online. 
+
+# Modulus 
+
+Review Question 1:
+
+Consider the case of a social media account of a journalist who is sharing public information for which it is important that the public may access the information, and that the information be vetted.
+
+Which of the following does the journalist NOT require?
+
+A. Confidentiality B. Integrity C. Availability 
+
+ANSWER: B. Integrity 
+
+Review Question 2:
+Consider the case of a whistleblower who, given the opportuntiy, would share information with a media outlet, but who does not want to be surveiled while sharing the information?
+
+Which of the following does the whistleblower most strongly require?
+
+A. Confidentiality B. Integrity C. Availability 
+
+ANSWER: Availability 
+
+Review Question 3 
+Two of the following can be guaranteed mathematically in the context of a single transfer of information. Which cannot?
+
+A. Confidentiality B. Integrity C. Availability
+
+ANSWER: Availability 
+
+Review Question 4
+Which of the following is like liveness? 
+
+A. Confidentiality B. Integrity C. Availability
+
+C. Availability 
+
+Which of the follow are like safety? 
+
+A. Confidentiality and Integrity 
+
+What is a hash-based signature? 
+
+C - a numerical value of a fixed size, that may be compute over numerical data of any size. 
+
+
+Review of Entropy: 
+
+```{r}
+numToBits = function(val){
+  paste(tail(rev(as.integer(intToBits(val))), n =5), collapse = "")
+}
+
+numToBits(1)
+
+intToBits(1)
+```
+
+
+```{r}
+intToUtf8(65:90)
+utf8ToInt("Z")
+```
+```{r}
+substring("hello",1,1)
+```
+
+```{r}
+ind_to_num = function(str, i)
+{
+  return(utf8ToInt(substring(str,i,i)))
+}
+
+ind_to_num("AAA",3)
+```
+
+```{r}
+text_to_num <- function(str)
+{
+  retVal = 0 ;
+  for (i in 1:nchar(str)) 
+  {
+    retVal = retVal + utf8ToInt(substring(str,i,i))
+  }
+  return(retVal)
+}
+
+text_to_num("hello")
+```
+
+```{r}
+num_to_text <- function(n)
+{
+  retStr = ''
+  char1 = as.integer(n / (2 ^ 8))
+  retStr = paste(retStr, intToUtf8(char1), sep='')
+  char2 = n - (char1 * (2 ^ 8))
+  retStr = paste(retStr, intToUtf8(char2), sep='')
+  return(retStr)
+}
+
+num_to_text(4050505)
+```
+
+```{r}
+num_to_text <- function(n)
+{
+  retStr = ''
+  char1 = as.integer(n /  (2 ^ 8))
+  retStr = paste(retStr, intToUtf8(char1), sep='')
+  char2 = as.integer(n %% (2 ^ 8))
+  retStr = paste(retStr, intToUtf8(char2), sep='')
+  return(retStr)
+}
+
+num_to_text(234203402340)
+```
+
+```{r}
+textToNumr <- function(s)
+{
+  if (nchar(s) == 1)
+  {
+    return(utf8ToInt(substring(s,1,1)))
+  }
+  return(utf8ToInt(substring(s,1,1)) + 256 * textToNumr(substring(s,2,nchar(s))))
+}
+```
+
+```{r}
+textToNum <- function(s)
+{
+  retVal = 0
+  for (i in 1:nchar(s))
+  {
+    retVal = retVal + utf8ToInt(substring(s,i,i)) * (2 ^ 8) ^ (nchar(s)-i)
+  }
+  return(retVal)
+}
+
+textToNum('hello')
+```
+
+```{r}
+numToTextr <- function(n)
+{
+  if (n > 0)
+  {
+    return((paste0(rev(intToUtf8(n %% 256)),numToTextr(as.integer(n / 256)))))
+  }
+  return('')
+}
+
+numToTextr(448378203247)
+```
+
+
