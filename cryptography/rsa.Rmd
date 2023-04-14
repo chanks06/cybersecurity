@@ -204,32 +204,7 @@ decrypt <- function(s, d, n)
 
 write a function that makes prime numbers ( that is only divisible by 1 and itself). 
 
-```{r}
-
-prime_gen = function() 
-{
-  pn = list() 
-  for(i in 1:1000)
-  if (i != 1)
-  {
-    if (i %% 2 != 0)
-    {
-        pn = append(pn, i)
-    }
-    else if (i == 2) 
-    {
-        pn = append(pn, i)
-    }
-  }
-  return(pn)
-
-}
-
-prime_numbers = prime_gen()
-
-sample(prime_numbers,2)
-
-```
+### warm-up: function that prints all the factors of the numbers 
 ```{r}
 factor_finder = function(x)
 {
@@ -242,81 +217,9 @@ factor_finder = function(x)
   }
 }
 
-factor_finder(12)
+factor_finder(100)
 ```
-
-```{r}
-#input is number of decimal digits 
-
-# compute a prime number between 10^s and 10^s+1 
-
-
-get_prime = function( s = 3) 
-{
-  x = sample(1:1000,1) # generating in a random number 
-  print(x)
-  factor_num = list()
-  
-  for (i in 1:x)
-    {
-      if((x %% i) == 0)
-      {
-        factor_num = append(factor_num,i)
-      }
-    }
-  
-    if(length(factor_num) == 2)
-    {
-        print('prime')
-    }
-}
- 
-get_prime(s = 3)
-
-```
-
-```{r}
-is_prime = function(x)
-{
-  for (i in 1:x)
-  {
-    if((x %% i) == 0)
-    {
-      factor_num = append(factor_num,i)
-    }
-  }
-  
-  if(length(factor_num) == 2)
-  {
-    print('prime')
-  }
-  else
-  {
-    print('not prime')
-  }
-}
-
-is_prime(5)
-
-get_prime = function()
-{
-  x = sample(1:1000,1) # generating in a random number 
-  print(x)
-  z = 'not prime' 
-  
-  while(z == 'not prime')
-  {
-      is_prime(x)
-  }
-  return(x)
-}
-
-get_prime()
-
-
-
-```
-
+# function that generates a a prime number 
 
 ```{r}
 is_prime = function(n) 
@@ -340,46 +243,29 @@ is_prime = function(n)
     }
 }
 
-```
 
-
-
-
-least common multiple 
-```{r}
-lcm = function(x,y)
+get_prime = function()
 {
-  xlist = vector()
-  ylist = vector()
-  
-  for(i in 1:10)
+  prime_check = FALSE 
+  while(prime_check == FALSE)
   {
-    x_vector = append(xlist,i*x)
-    ylist = append(ylist,i*y)
-  }
-
-  for(i in 1:length(xlist))
-  {
-    for(j in 1:length(ylist))
+   x = sample(1:1000,1)
+   prime_check = is_prime(x)
+   if(prime_check)
     {
-      if(xlist[i] == ylist[j])
-      {
-        print(xlist[i])
-        print(ylist[j])
-        break
-      }
+      return(x)
     }
   }
 }
 
-lcm(3,5)
+#testing get_prime() 
+get_prime()
 
 ```
 
+# least common multiple 
+
 ```{r}
-max(6,8)
-
-
 lcm = function(x,y)
 {
   big = max(x,y)
@@ -392,19 +278,37 @@ lcm = function(x,y)
   return(multiple)
 }
   
+#check
+lcm(6,8)
+```
 
-lcm(5,7)
+## calvin's primarily function:  
+```{r}
+primality <- function(n) 
+{
+  i = 2
+  while (i < n)
+  {
+    if (n %% i == 0)
+    {
+      return(FALSE)
+    }
+    i = i + 1
+  }
+  return(TRUE)
+}
 
+#For each integer i in this range, the function checks whether n is divisible by i using the modulo operator (%%). If n is found to be divisible by any number in this range, it cannot be prime and the function returns FALSE.
 
+primality(71)
 
-
-
-
+71 %% 2
 ```
 
 
-Co-prime 
+## Co-primality 
 
+Two numbers are co-prime if they do not have any common factors other than 1.
 ```{r}
 coprimality <- function(n,m) 
 {
@@ -445,6 +349,8 @@ primality <- function(n)
 primality(7)
 ```
 
+## greatest common denominator 
+gcd = the highest number that divides all the given integers.
 ```{r}
 gcd <- function(n, m)
 {
@@ -456,6 +362,8 @@ gcd <- function(n, m)
   }
   return(gcd(b, a %% b))
 }
+
+gcd(3,7)
 ```
 
 
@@ -466,7 +374,45 @@ coprimality <- function(n,m)
   return(gcd(n,m)==1)
 }
 
-coprimality(12,10)
+coprimality(5,7)
 ```
 
+```{r}
+lambda <- function(p, q) 
+{
+  lcm <- function(n, m)
+  lcm(p - 1, q - 1)
+}
+
+lambda(p,q)
+```
+
+# KEY GENERATION 
+
+1. Compute two prime numbers p and q: 
+```{r}
+p = get_prime()
+q = get_prime()
+```
+
+2. Compute the product of these primes n: 
+```{r}
+n = p*q 
+```
+
+3. Compute λ(n) "Carmichael's totient function"
+```{r}
+
+```
+
+4. Compute a value e co-prime with λ(n)
+```{r}
+
+```
+
+
+5. Compute d, the modular multiciplicate inverse of e modulo λ(n)
+```{r}
+
+```
 
