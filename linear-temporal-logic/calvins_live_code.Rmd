@@ -1,0 +1,126 @@
+---
+title: "LTL_R_part2"
+output: pdf_document
+date: "2023-04-06"
+---
+
+# Cybersecurity : Week 12 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Globally 
+Future 
+Release 
+Weak_Until 
+Mighty_Release
+
+What is material implication ?
+a -> b 
+
+a b   a -> b 
+T T   T
+T F   F
+F T   T
+F F   T
+
+```{r}
+conjunction = function(e1,e2)
+{
+  return(e1(t))
+}
+```
+
+
+
+```{r}
+text_to_num = function(str)
+{
+  retVal = 0
+  for(i in 1:nchar(str))
+  {
+    retVal = retVal + utf8ToInt(substring(str,i,i))
+  }
+  return(retVal)
+}
+
+text_to_num("hello")
+#Takes one part of string and converts to numbers 
+```
+
+We should be suspicious of this output, 532 is a very small value for a string of length 5. 
+
+- How many strings of length 5 are there? A LOT 
+- how many string of length 5 are alphabetically before "hello"? 
+- how many string of length less that 5 are there? 
+
+
+```{r}
+num_to_text = function(n)
+{
+  retStr = ''
+  char1 = as.integer(n/(2^8))
+  retStr = paste(retStr, intToUtf8(char1), sep = '')
+  char2 = as.integer(n %% (2^8))
+  retStr = paste(retStr, intToUtf8(char2), sept ='')
+  return(retStr)
+}
+```
+
+num_to_text 
+```{r}
+
+nums = c(1:26)       
+letters = c('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
+
+codex = data.frame(nums, letters)
+
+str = "hello"
+
+for(i in 1:nchar(str))
+{
+  letter = substr(str,i,i)
+}
+
+num_to_text = function(n)
+{
+  return_string = '' 
+}
+
+
+
+```
+
+text_to_num 
+```{r}
+
+text_to_num = function(n) 
+{
+  
+}
+```
+
+
+
+```{r}
+text_to_num = function(string)
+{
+ind_to_num = function(str, i)
+{
+  return(utf8ToInt(substring(str,i,i)))
+}
+
+}
+
+```
+
+```{r}
+intToUtf8(256)
+```
+
+```{r}
+
+
+```
+

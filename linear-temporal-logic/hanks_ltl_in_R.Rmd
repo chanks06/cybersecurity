@@ -1,0 +1,544 @@
+---
+title: "LTL in R"
+author: "Charles Hanks, in collaboration with Jesse, Ben, and Danny"
+date: "2023-03-17"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Initial List; 
+```{r}
+t = list('a','a','a','b')
+```
+
+ATOMIC PROPOSITION: 
+
+```{r}
+ap = function(p){
+  f = function(t)
+  {
+    return(grepl(p,t[1], fixed = TRUE))
+  }
+  return(f)
+}
+
+### TEST
+
+a = ap('a')
+b = ap('b')
+```
+
+NEXT: 
+
+a holds in the next time 
+
+Xa
+```{r}
+neXt <- function(exp)
+{
+  f = function(t)
+    {
+    len = length(t)
+    if (len > 1)
+      {
+      return(exp(t[2:len]))
+      } 
+    else 
+      {
+        return(exp(t))
+      }
+    }
+  return(f)
+}
+
+```
+
+
+Upgrading neXt function to have ability to execute multi-nexts: 
+```{r}
+neXt = function(exp,sup =1)
+{
+  f = function(t)
+  {
+    len = length(t)
+    if(len > sup)
+    {
+      return(exp(t[(sup+1):len]))
+    }
+    else 
+    {
+      return(exp(t[len:len]))
+    }
+  }
+  return(f)
+}
+
+### TEST
+
+Xa = neXt(a)
+Xb = neXt(b)
+
+neXt(Xa)(t)
+
+#is the next letter in the word b? 
+neXt(ap('b'))(t)
+
+#is the 3rd next letter b? 
+neXt(ap('b'),3)(t)
+```
+
+
+NEGATION:
+
+not a
+
+¬ a
+```{r}
+negation = function(exp){
+  f = function(t)
+  {
+    return(!exp(t))
+  }
+  return(f)
+}
+
+t
+a = ap('a')
+b = ap('b')
+
+negation(b)(t)
+
+
+
+```
+
+
+DISJUNCTION: 
+
+a OR b 
+
+a ∨ b
+```{r}
+disjunction = function(exp1,exp2)
+{
+  f = function(t)
+  {
+    return(exp1(t) || exp2(t))
+  }
+  return(f)
+}
+
+### TEST 
+
+a = ap('a')
+b = ap('b')
+
+disjunction(a,b)(t)
+disjunction(Xa,Xb)(t) 
+
+t3 = list('c','a','c')
+disjunction(neXt(a),b)(t3)
+
+NXaDNxb = disjunction(negation(neXt(ap('b'))), negation(Xa))
+NXaDNxb(t) 
+
+neXt(NXaDNxb,2)(t)
+
+```
+
+
+CONJUNCTION: 
+
+a AND b 
+
+a ∧ b
+```{r}
+conjunction = function(exp1,exp2)
+{
+  f = function(t)
+  {
+    return(exp1(t) && exp2(t))
+  }
+  return(f)
+}
+
+### TEST 
+
+t = list('a','a','a','ab')
+
+# a test that should result in false 
+conjunction(ap('a'),ap('ab'))(t)
+
+# a test that should result in true 
+neXt(conjunction(neXt(a),b),3)(t)
+
+
+```
+
+IMPLICATION:
+
+if a then b
+
+a → b 
+```{r}
+implication = function(exp1,exp2)
+{
+    f = function(t)
+    {
+    result = FALSE
+      if(exp1(t) == FALSE && exp2(t) == FALSE)
+      {
+        result = TRUE  
+      }
+      else if (exp1(t) == FALSE && exp2(t) == TRUE)
+      {
+        result = TRUE 
+      }
+      else if (exp1(t) == TRUE && exp2(t) == FALSE)
+      {
+        result = FALSE 
+      }
+      else if (exp1(t) == TRUE && exp2(t) == TRUE)
+      {
+        result = TRUE 
+      }
+      else 
+      {
+        result = FALSE
+      }
+    return(result)
+    }
+  return(f)
+}
+
+### TEST 
+
+t = list('a','a','b','d')
+
+implication(b,Xb)(t)
+implication(a,Xb)(t)
+
+t5=list('a','b','c','d')
+implication(b,a)(t5)
+```
+
+UNTIL: 
+
+a holds unless b holds, and b must hold at some future time 
+
+a U b 
+```{r}
+Until <-function(exp1,exp2)
+{
+  f <- function(t)
+  {
+    len = length(t)
+    if (len > 1 & exp1(t))
+    {
+      # if exp1 holds and there's trace left, we look at the rest of the trace
+      return(Until(exp1,exp2)(t[(2):len]))
+    } else {
+      # otherwise, either exp2 holds or the until is false
+      return(exp2(t))
+    }
+  }
+  return(f)
+}
+
+### TEST 
+
+t = list('a','a','a','b')
+Until(a,b)(t)
+t = list('b','a','a','a','c','c','c')
+Until(a,b)(t)
+```
+
+GLOBAL: 
+
+a holds in all future times 
+
+G a ≡ a ∧ (a → Xa)
+```{r}
+Global = function(exp)
+{
+  f = function(t)
+  {
+    len = length(t)
+    for(i in 1:len)
+    {
+      if(conjunction(exp,implication(exp,neXt(exp)))(t[i:len])) # a ^ a -> Xa
+      {
+          result = TRUE
+      }
+      else 
+      {
+          result = FALSE 
+          break 
+      }
+    }
+    return(result)
+  }
+  return(f)
+}
+
+#### TEST 
+
+t = list('a','a','a','b','a','a')
+Global(a)(t)
+t2 = list('a','a','a','a','a','a')
+Global(a)(t2)
+
+```
+
+FUTURE: 
+
+a must hold eventually 
+
+F a ≡ true U a
+```{r}
+Future = function(exp) 
+{
+  f = function(t)
+  {
+    result = FALSE
+    len = length(t)
+    for (i in 1:len)
+    {
+      if (exp(t[i]))
+      {
+        result = TRUE 
+        break
+      }
+      else
+      {
+        result = FALSE 
+      }
+      
+    }
+    return(result)
+  }
+  return(f)
+}
+
+### TEST 
+
+t = list('a','a','a','b','a','a')
+Future(b)(t)
+
+t1 = list('c','c','c','c')
+Future(a)(t1)
+
+```
+
+WEAK UNTIL 
+
+a has to hold at least until b holds, if b never holds, then a must remain true forever 
+
+a W b ≡ (a U b) ∨ G a 
+
+```{r}
+Weak_Until = function(exp1,exp2)
+{
+  f = function(t)
+  {
+    return(disjunction(Until(exp1,exp2),Global(exp1))(t))
+  }
+  return(f)
+}
+
+### TEST 
+
+t = list('a','a','a','a')
+Weak_Until(a,b)(t)
+
+t1 = list('a','b','c')
+Weak_Until(a,b)(t)
+```
+
+RELEASE 
+
+a R b : b has to be true until and including the point where a becomes true, if a never becomes true, b must remain true forever 
+
+b holds up to and including when a holds
+
+a R b ≡ ¬(¬a U ¬b)
+
+```{r} 
+Release = function(exp1,exp2)
+{
+  f = function(t)
+  {
+    return(negation(Until(negation(exp1),negation(exp2)))(t))
+  }
+  return(f)
+}
+
+t = list('b','b','b','ab','c')
+Release(a,b)(t)
+
+t1 = list('b','b','b','b','b')
+Release(a,b)(t1) #if a never becomes from, b remains true forever 
+```
+
+MIGHTY RELEASE 
+
+b holds up to and including when a holds, and a must hold at some point in the future
+
+a M b ≡ (a R b) ∧ F a
+
+```{r}
+Mighty_Release = function(exp1,exp2)
+{
+  f = function(t)
+  {
+    return(conjunction(Release(exp1,exp2),Future(exp1))(t))
+  }
+  return(f)
+}
+
+###
+
+t = list('a','a','a','ab','c','c')
+Mighty_Release(b,a)(t)
+
+t1 = list('b','b','c','c')
+Mighty_Release(b,a)(t1) # False beccause b must occur!
+```
+
+
+####
+
+calvin's code: 
+
+```{r}
+
+calvin.implication = function(e1,e2)
+{
+  f = function(t)
+  {
+    if(e1(t))
+    {
+      return(e2(t))
+    }
+    return(TRUE)
+  }
+  return(f)
+}
+
+###
+
+#test 
+
+neXt(calvin.implication(b,a),3)(t)
+
+```
+
+
+```{r}
+calvin.global = function(e)
+{
+  f = function(t)
+    {
+    len = length(t)
+    if(len == 1)
+    {
+      return(e(1))
+    }
+    return(e(t) && calvin.global(e)(t[2:len]))
+    }
+  return(f)
+}
+
+
+```
+
+```{r}
+calvin.future = function(e)
+{
+ f = function(t)
+ {
+   len = length(t)
+   if (len ==1)
+   {
+     return(e(t))
+   }
+   return(e(t) || calvin.futre(e)(t[2:len]))
+ }
+}
+
+
+```
+
+```{r}
+calvin.release = function(e1,e2)
+{
+  f = function(t)
+  {
+    len = length(t)
+    if (e1(t) && e2(t))
+    {
+      return(TRUE)
+    }
+    if(len > 1)
+    {
+      return(e2(t) && calvin.release(e1,e2)(t[2:len]))
+    }
+    return(FALSE)
+  }
+  return(f)
+}
+
+calvin.release(Xa,b)(t)
+
+```
+
+
+```{r}
+calvin.mightyrelease = function(e1,e2)
+{
+  f = function(t)
+  {
+    len = lengh(t)
+    if (e1(t) && e(t))
+    {
+      return(TRUE)
+    }
+    if(len > 1)
+    {
+      return(e2(t) && calvin.mightyrelease(e1,e2)(t[2:len]))
+    }
+    return(FALSE)
+  }
+  return(f)
+}
+```
+
+
+weak until 
+```{r}
+calvin.until <-function(e1,e2)
+{
+  f <- function(t)
+  {
+    len = length(t)
+    if (e2(t)){
+      return(TRUE)
+    } else if(e1(t) && len > 1){
+      return(f(t[2:len]))
+    } else {
+      return(e1(t))
+    }
+  }
+  return(f)
+}
+
+calvin.until(a,b)(t)
+
+```
+
+
